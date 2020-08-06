@@ -1,0 +1,22 @@
+from numpy import *
+from CavityRates import CavityRates
+
+model_code = 2
+
+if model_code == 0:
+        cavr_exp = CavityRates(model='exp_data')
+elif model_code == 1:
+    cavr_exp = CavityRates(model='magic_numbers')
+elif model_code == 2:
+    cavr_exp = CavityRates(model='exp_data_adj')
+else:
+    raise Exception('Model for calculating absorption and emission is not specified')
+
+wave_len = array([ 578.     ,  575.77979258,  575.77979258,  573.57657636,
+        573.57657636,  573.57657636,  571.39015705,  571.39015705,
+        571.39015705,  571.39015705])
+
+molInResJ = 7e4
+
+Ab = cavr_exp.compute_rates(wave_len*1e-9)[0]/molInResJ
+Em = cavr_exp.compute_rates(wave_len*1e-9)[1]/molInResJ
