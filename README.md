@@ -36,3 +36,17 @@ git clone git@github.com:photonbec/PyPBEC.git
 ```
 
 To install Git, [check this](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). Else, you can directly download the zip of the repository from GitHub.
+
+## Brief theory
+
+In recent years, two-dimensional photon gas inside a dye-filled microcavity has become a useful tool for studying both equilibrium and nonequlibrium physics. The photon gas can thermalize via repeated absorption and reemission of photons by the dye molecules, ultimately leading to the formation of a near-equilibrium Bose-Einstein condensate (BEC). 
+
+The light-matter interaction inside the microcavity can be modelled using a nonequilibrium model. Taking into account the intrinsic losses and the absorption and emission processes, the equation of motion for the photon-molecule system is given by a Markovian Lindblad equation. 
+
+
+## Outline
+
+The `PyBEC` module is primarily used to obtain the following 
+
+- Both the transient and the steady state population of the cavity mode(s) and the number of excited molecules, and
+- The time-dependent second-order correlation function and the photon statistics of the cavity mode(s)
