@@ -230,6 +230,27 @@ class Modes():
 
 	##### The following methods define a collection of typical cavity geometries
 
+
+	def set_geometry(self, geometry):
+		
+		"""
+			Sets a user-defined mirror shape. The mirror shape array size must be compatible with the grid size and grid resolution defined.
+			The mirror shape is defined as the spatially dependent perturbation of the cavity length (on top of L0). The units are meters.
+			The geometry is set such that the longest cavity point corresponds to geometry=0, such that geometry(x,y) >= 0
+
+			Parameters:
+
+				mirror_shape (numpy array):
+
+		"""
+		if not type(geometry) == np.ndarray:
+			raise Exception("geometry is expected to be a numpy array")
+		if not geometry.shape == self.X.shape:
+			raise Exception("Size of geometry is not compatible with grid. Expected size is ({0},{1})".format(self.X.shape[0], self.X.shape[1]))
+		self.geometry = np.array(1e6*copy.deepcopy(geometry), dtype=float)
+
+
+
 	def set_geometry_spherical(self, RoC, depth):
 		
 		"""
@@ -244,6 +265,8 @@ class Modes():
 		depth = 1e6*depth
 		aux = (np.sqrt(RoC**2 - (self.X**2 + (self.Y)**2)) - RoC)
 		self.geometry = (np.heaviside(aux + depth, 1)*aux) - (np.heaviside(-aux - depth, 1)*depth)
+		self.geometry = - self.geometry
+
 
 
 	def set_geometry_box(self, width, height, depth):
@@ -262,6 +285,7 @@ class Modes():
 		depth = 1e6*depth
 		self.geometry = -depth + depth*(1-np.heaviside(self.X-width/2, 1)) * (1-np.heaviside(-self.X-width/2, 1)) * \
 					(1-np.heaviside(self.Y-height/2, 1)) * (1-np.heaviside(-self.Y-height/2, 1))
+		self.geometry = - self.geometry
 
 
 	def  set_geometry_circular_box(self, radius, depth):
@@ -277,6 +301,7 @@ class Modes():
 		radius = 1e6*radius
 		depth = 1e6*depth
 		self.geometry = -depth*np.heaviside(np.sqrt(self.X**2+self.Y**2)-radius, 1)
+		self.geometry = - self.geometry
 
 
 	######################################################################
@@ -297,7 +322,7 @@ class Modes():
 		"""
 
 		# Renormalizes and reshapes the cavity geometry
-		deltaL_normalized = self.geometry/self.L0
+		deltaL_normalized = -self.geometry/self.L0
 		deltaL_reshaped = np.reshape(deltaL_normalized, [deltaL_normalized.shape[0]*deltaL_normalized.shape[1]])
 		deltaL_sparse = sp.diags(diagonals=deltaL_reshaped)
 
@@ -321,6 +346,7 @@ class Modes():
 
 		# Converts eigenvalues to wavelenght units
 		self.lambdas = np.real(self.n*(self.lambda0 / (self.n-eigenvalues)))
+		
 
 		# Reshapes the eigenmodes and calculates their square amplitude
 		self.modes = np.abs(np.reshape(eigenvectors, [deltaL_normalized.shape[0], deltaL_normalized.shape[1], self.n_modes]))**2
@@ -378,7 +404,7 @@ class Modes():
 
 	def get_cavity_grid(self):
 
-		return 1e-6*self.X, 1e-6*self.Y
+		return copy.deepcopy(1e-6*self.X), copy.deepcopy(1e-6*self.Y)
 
 
 	def load_pump(self, pump):
