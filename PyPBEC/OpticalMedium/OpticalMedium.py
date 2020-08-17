@@ -2,6 +2,8 @@ import numpy as np
 from scipy import constants as sc
 from scipy.interpolate import interp1d
 from pathlib import Path
+from scipy.special import erf as Erf
+import pandas as pd
 import sys
 import os
 import csv
@@ -68,36 +70,56 @@ class Rhodamine6G(OpticalMedium):
 
 		"""
 
-		datafile = Path("data") / "absorption_cross_sections_R6G_in_EthyleneGlycol.csv"
-		datafile = Path(os.path.dirname(os.path.abspath(__file__))) / datafile
-		all_extinction_values = []
-		for exti_data_index in range(1,5):
-			exti_file = datafile.open()
-			reader = csv.reader(exti_file)
-			dump = [thing for thing in reader]
-			exti_file.close()
-			min_index = 100
-			extinction_wavelengths = np.array([float(x[0]) for x in dump[min_index:]])
-			extinction_values = np.array([float(x[exti_data_index]) for x in dump[min_index:]])
-			all_extinction_values.append(list(extinction_values))
-			concn = dump[0][exti_data_index].split("concn=")[-1]
+		# absorption data
+		min_wavelength = 480
+		max_wavelength = 650
+		absorption_spectrum_datafile = Path("data") / 'absorption_cross_sections_R6G_in_EthyleneGlycol_corrected.csv'
+		absorption_spectrum_datafile = Path(os.path.dirname(os.path.abspath(__file__))) / absorption_spectrum_datafile
+		raw_data2 = pd.read_csv(absorption_spectrum_datafile)
+		initial_index = raw_data2.iloc[(raw_data2['wavelength (nm)']-min_wavelength).abs().argsort()].index[0]
+		raw_data2 = raw_data2.iloc[initial_index:].reset_index(drop=True)
+		final_index = raw_data2.iloc[(raw_data2['wavelength (nm)']-max_wavelength).abs().argsort()].index[0]
+		raw_data2 = raw_data2.iloc[:final_index].reset_index(drop=True)
+		absorption_data = raw_data2
+		absorption_data_normalized = absorption_data['absorption cross-section (m^2)'].values / np.max(absorption_data['absorption cross-section (m^2)'].values)
+		absorption_spectrum = np.squeeze(np.array([[absorption_data['wavelength (nm)'].values], [absorption_data_normalized]], dtype=float))
+		interpolated_absorption_spectrum = interp1d(absorption_spectrum[0,:], absorption_spectrum[1,:], kind='cubic')
 		
-		# Combine multiple concentrations into one dataset
-		break_indices = [169,181,191] # points at which various concentrations SNR become better than others
-		combined_extinction_values = all_extinction_values[0][:break_indices[0]]
-		combined_extinction_values +=all_extinction_values[1][break_indices[0]:break_indices[1]]
-		combined_extinction_values +=all_extinction_values[2][break_indices[1]:break_indices[2]]
-		combined_extinction_values +=all_extinction_values[3][break_indices[2]:]
-		
-		normalised_absorption = interp1d(extinction_wavelengths*1e-9,np.array(combined_extinction_values)/np.max(combined_extinction_values))
+		# emission data
+		fluorescence_spectrum_datafile =  Path("data") / 'fluorescence_spectrum_R6G_in_EthyleneGlycol_corrected.csv'
+		fluorescence_spectrum_datafile = Path(os.path.dirname(os.path.abspath(__file__))) / fluorescence_spectrum_datafile
+		raw_data = pd.read_csv(fluorescence_spectrum_datafile)
+		initial_index = raw_data.iloc[(raw_data['wavelength (nm)']-min_wavelength).abs().argsort()].index[0]
+		raw_data = raw_data.iloc[initial_index:].reset_index(drop=True)
+		final_index = raw_data.iloc[(raw_data['wavelength (nm)']-max_wavelength).abs().argsort()].index[0]
+		raw_data = raw_data.iloc[:final_index].reset_index(drop=True)
+		fluorescence_data = raw_data
+		fluorescence_data_normalized = fluorescence_data['fluorescence (arb. units)'].values / np.max(fluorescence_data['fluorescence (arb. units)'].values)
+		emission_spectrum = np.squeeze(np.array([[fluorescence_data['wavelength (nm)'].values], [fluorescence_data_normalized]], dtype=float))
+		interpolated_emission_spectrum = interp1d(emission_spectrum[0,:], emission_spectrum[1,:], kind='cubic')
 
-		lamZPL = 545e-9
+		# Uses both datasets
+		if np.min(1e9*np.array(lambdas)) < 480 or np.max(1e9*np.array(lambdas)) > 650:
+			raise Exception('*** Restrict wavelength to the range between 480 and 650 nm ***')
+
 		temperature = 300
-		peak_Xsectn = 2.45e-20
+		lamZPL = 545e-9
 		n_mol_per_vol= dye_concentration*sc.Avogadro
-		absorption_Xsctns = [normalised_absorption(a_l)*peak_Xsectn for a_l in lambdas]
-		absorption_rates = np.array(absorption_Xsctns)*n_mol_per_vol*sc.c/n
-		ks_factors = np.array([np.exp(sc.h*sc.c*(1/lamZPL - 1/lam)/(sc.Boltzmann*temperature)) for lam in lambdas])
-		emission_rates = absorption_rates*ks_factors
-		
+		peak_Xsectn = 2.45e-20*n_mol_per_vol*sc.c/n
+		wpzl = 2*np.pi*sc.c/lamZPL/1e12
+
+		def freq(wl):
+			return 2*np.pi*sc.c/wl/1e12
+		def single_exp_func(det):
+			f_p = 2*np.pi*sc.c/(wpzl+det)*1e-3
+			f_m = 2*np.pi*sc.c/(wpzl-det)*1e-3
+			return (0.5*interpolated_absorption_spectrum(f_p)) + (0.5*interpolated_emission_spectrum(f_m))
+		def Err(det):
+			return Erf(det*1e12)
+		def single_adjust_func(det):
+			return ((1+Err(det))/2.0*single_exp_func(det)) + ((1-Err(det))/2.0*single_exp_func(-1.0*det)*np.exp(sc.h/(2*np.pi*sc.k*temperature)*det*1e12)) 
+			
+		emission_rates = np.array([single_adjust_func(-1.0*freq(a_l)+wpzl) for a_l in lambdas])*peak_Xsectn
+		absorption_rates = np.array([single_adjust_func(freq(a_l)-wpzl) for a_l in lambdas])*peak_Xsectn
+
 		return absorption_rates, emission_rates
