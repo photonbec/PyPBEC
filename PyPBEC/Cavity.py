@@ -218,7 +218,7 @@ class Modes():
 		self.L0 = 1e6*float(L0)
 		self.lambda0 = 1e6*float(lambda0)
 		self.n = float(n)
-		self.n_modes = int(n_modes)
+		self.n_modes = n_modes
 		self.pump = None
 
 		# Creates the grid

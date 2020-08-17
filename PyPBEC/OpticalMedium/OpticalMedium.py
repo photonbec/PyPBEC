@@ -33,6 +33,17 @@ class OpticalMedium():
 
 
 	def get_rates(self, lambdas, **kwargs):
+
+		"""
+			Calculates the rates of absorption and emission, for a specific optical medium.
+
+			Parameters:
+
+				lambdas (list, or other iterable): Wavelength points where the rates are to be calculated. Wavelength is in meters
+				other medium specific arguments
+				
+		"""
+
 		return self.medium.get_rates(lambdas=lambdas, **kwargs)
 
 
@@ -45,6 +56,17 @@ class Rhodamine6G(OpticalMedium):
 
 
 	def get_rates(self, lambdas, dye_concentration, n):
+
+		"""
+			Rates for Rhodamine 6G
+
+			Parameters:
+
+				lambdas (list, or other iterable):  	Wavelength points where the rates are to be calculated. Wavelength is in meters
+				dye_concentration (float):				In mM (milimolar) 1 mM = 1 mol / m^3			
+				n (float): 								index of refraction
+
+		"""
 
 		datafile = Path("data") / "absorption_cross_sections_R6G_in_EthyleneGlycol.csv"
 		datafile = Path(os.path.dirname(os.path.abspath(__file__))) / datafile
