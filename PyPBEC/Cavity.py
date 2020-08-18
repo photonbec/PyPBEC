@@ -186,7 +186,7 @@ class Modes():
 
 	"""
 
-	def __init__(self, grid_size, grid_delta, L0, lambda0, n, n_modes):
+	def __init__(self, grid_size, grid_delta, L0, q, n, n_modes):
 		"""
 
 			Parameters:
@@ -194,7 +194,7 @@ class Modes():
 				grid_delta (float):			Grid resolution, in meters. It will be the same in x and y.
 				L0 (float):					Cavity lenght, in meters. The mirror shape is defined as perturbations on top of ...
 											... overall cavity length.
-				lambda0 (float):			Cavity cutoff, in meters.
+				q (int):					Longitudinal mode number.
 				n (float):					Refractive index of the intracavity medium.
 				n_modes (int):				Number of modes to calculate.
 
@@ -206,8 +206,8 @@ class Modes():
 			raise Exception("Invalid grid resolution")
 		if L0<=0:
 			raise Exception("Cavity length must be positive")
-		if lambda0<=0:
-			raise Exception("Cavity cutoff must be positive")
+		if q<=0:
+			raise Exception("Invalid longitudinal mode number")
 		if n<=0:
 			raise Exception("Refractive index must be positive")
 		if n_modes<=0 or not type(n_modes)==int:
@@ -216,7 +216,7 @@ class Modes():
 		self.grid_size = 1e6*float(grid_size)
 		self.grid_delta = 1e6*float(grid_delta)
 		self.L0 = 1e6*float(L0)
-		self.lambda0 = 1e6*float(lambda0)
+		self.q = 1.0*q
 		self.n = float(n)
 		self.n_modes = n_modes
 		self.pump = None
@@ -334,9 +334,14 @@ class Modes():
 		laplacian = sp.kron(I,mat,format='csr')+sp.kron(mat,I)
 
 		# Computes eigenmodes and eigenvalues
-		cte1 = (self.lambda0)**2 / (8*(np.pi**2)*(self.n**2))
-		cte1 = (1.0 / (self.grid_size / deltaL_normalized.shape[0])**2) * cte1
-		hamiltonian_operator = cte1*laplacian + deltaL_sparse
+		#cte1 = (self.lambda0)**2 / (8*(np.pi**2)*(self.n**2))
+		#cte1 = (1.0 / (self.grid_size / deltaL_normalized.shape[0])**2) * cte1
+		#hamiltonian_operator = cte1*laplacian + deltaL_sparse
+		
+		kinetic = -self.L0/(2*self.q*np.pi**2*self.n) * (1.0 / (self.grid_size / deltaL_normalized.shape[0])**2)
+		potential = (self.q/(self.n*self.L0)) * deltaL_sparse
+		hamiltonian_operator = -kinetic*laplacian + potential
+
 		eigenvalues, eigenvectors = linalg.eigs(A=hamiltonian_operator, which='SM', k=self.n_modes)
 
 		# Orders by energy
@@ -345,7 +350,7 @@ class Modes():
 		eigenvectors = eigenvectors[:,sorted_ind]
 
 		# Converts eigenvalues to wavelenght units
-		self.lambdas = np.real(self.n*(self.lambda0 / (self.n-eigenvalues)))
+		self.lambdas = np.real(1.0/(-eigenvalues/(2) + self.q/(2*self.n*self.L0)))
 		
 
 		# Reshapes the eigenmodes and calculates their square amplitude
@@ -383,7 +388,7 @@ class Modes():
 		for i in range(first_mode_ax_ind, 8):
 			aux_ind = i-first_mode_ax_ind
 			if self.n_modes > aux_ind:
-				axes[i].pcolor(np.squeeze(self.modes[:,:,aux_ind]))
+				axes[i].pcolor(self.X, self.Y, np.squeeze(self.modes[:,:,aux_ind]))
 				axes[i].set_xlabel(r'x (microns)')
 				axes[i].set_ylabel(r'y (microns)')
 				axes[i].set_title(r'Mode {0} (Squared amplitude)'.format(aux_ind))
