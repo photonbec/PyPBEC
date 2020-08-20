@@ -179,6 +179,8 @@ class Cavity():
 
 
 
+
+
 class Modes():
 
 	"""
@@ -190,19 +192,21 @@ class Modes():
 		"""
 
 			Parameters:
-				grid_size (float):			Total grid size, in meters. The numerical grid is always square.
-				grid_delta (float):			Grid resolution, in meters. It will be the same in x and y.
-				L0 (float):					Cavity lenght, in meters. The mirror shape is defined as perturbations on top of ...
-											... overall cavity length.
-				q (int):					Longitudinal mode number.
-				n (float):					Refractive index of the intracavity medium.
-				n_modes (int):				Number of modes to calculate.
+				grid_size (list of float or float):	Total grid size, over X and  Y, in meters.
+				grid_delta (float):					Grid resolution, in meters. It will be the same in x and y.
+				L0 (float):							Cavity lenght, in meters. The mirror shape is defined as perturbations on top of ...
+													... overall cavity length.
+				q (int):							Longitudinal mode number.
+				n (float):							Refractive index of the intracavity medium.
+				n_modes (int):						Number of modes to calculate.
 
 		"""
 
-		if grid_size<=0:
+		if not type(grid_size) == list:
+			grid_size = [grid_size, grid_size]
+		if grid_size[0]<=0 or grid_size[1]<=0:
 			raise Exception("Grid size must be positive")
-		if grid_delta<=0 or grid_delta>grid_size:
+		if grid_delta<=0 or grid_delta>grid_size[0] or grid_delta>grid_size[1]:
 			raise Exception("Invalid grid resolution")
 		if L0<=0:
 			raise Exception("Cavity length must be positive")
@@ -213,7 +217,7 @@ class Modes():
 		if n_modes<=0 or not type(n_modes)==int:
 			raise Exception("Invalid number of modes")
 
-		self.grid_size = 1e6*float(grid_size)
+		self.grid_size = [1e6*float(grid_size[0]), 1e6*float(grid_size[1])]
 		self.grid_delta = 1e6*float(grid_delta)
 		self.L0 = 1e6*float(L0)
 		self.q = 1.0*q
@@ -222,8 +226,8 @@ class Modes():
 		self.pump = None
 
 		# Creates the grid
-		x = np.arange(-self.grid_size/2, self.grid_size/2, self.grid_delta)
-		y = np.arange(-self.grid_size/2, self.grid_size/2, self.grid_delta)
+		x = np.arange(-self.grid_size[0]/2, self.grid_size[0]/2, self.grid_delta)
+		y = np.arange(-self.grid_size[1]/2, self.grid_size[1]/2, self.grid_delta)
 		self.X, self.Y = np.meshgrid(x, y)
 		
 
@@ -327,19 +331,20 @@ class Modes():
 		deltaL_sparse = sp.diags(diagonals=deltaL_reshaped)
 
 		# Calculates the sparse matrix representation of the 2D Laplacian
-		N = deltaL_normalized.shape[0]
-		diag = np.ones([N*N])
-		mat = sp.spdiags([diag,-2*diag,diag],[-1,0,1],N,N)
-		I = sp.eye(N)
-		laplacian = sp.kron(I,mat,format='csr')+sp.kron(mat,I)
+		Nx = deltaL_normalized.shape[0]
+		Ny = deltaL_normalized.shape[1]
+		diagx = np.ones([Nx*Nx])
+		diagy = np.ones([Ny*Ny])
+		matx = sp.spdiags([diagx,-2*diagx,diagx],[-1,0,1],Nx,Nx)
+		maty = sp.spdiags([diagy,-2*diagy,diagy],[-1,0,1],Ny,Ny)
+		Ix = sp.eye(Nx)
+		Iy = sp.eye(Ny)
+		laplacian = sp.kron(Ix,maty,format='csr')+sp.kron(matx,Iy)
 
-		# Computes eigenmodes and eigenvalues
-		#cte1 = (self.lambda0)**2 / (8*(np.pi**2)*(self.n**2))
-		#cte1 = (1.0 / (self.grid_size / deltaL_normalized.shape[0])**2) * cte1
-		#hamiltonian_operator = cte1*laplacian + deltaL_sparse
-		
-		kinetic = -self.L0/(2*self.q*np.pi**2*self.n) * (1.0 / (self.grid_size / deltaL_normalized.shape[0])**2)
+		# Computes eigenmodes and eigenvalues	
+		kinetic = -self.L0/(2*self.q*np.pi**2*self.n) * (1.0 / ((self.grid_size[0]/deltaL_normalized.shape[0])*(self.grid_size[1]/deltaL_normalized.shape[1])))
 		potential = (self.q/(self.n*self.L0)) * deltaL_sparse
+
 		hamiltonian_operator = -kinetic*laplacian + potential
 
 		eigenvalues, eigenvectors = linalg.eigs(A=hamiltonian_operator, which='SM', k=self.n_modes)
