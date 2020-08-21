@@ -22,7 +22,7 @@ cavity.set_cavity_loss_rates(rates=[1.0])
 cavity.set_cavity_emission_rates(rates=[10.0])
 cavity.set_cavity_absorption_rates(rates=[0.0])
 cavity.set_reservoir_decay_rates(rates=[500.0])
-cavity.set_reservoir_population(population=[int(1e9)])
+cavity.set_reservoir_population(population=[1e9])
 cavity.set_coupling_terms(coupling_terms=[[1.0]])
 
 # Solver

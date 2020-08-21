@@ -61,8 +61,6 @@ class Solver():
 												Expected shape is (M,)
 
 		"""
-		if any([not (type(number)==int or type(number)==np.int64) for number in initial_photons]):
-			raise Exception("Initial photon population must all be integers")
 		initial_photons = np.array(initial_photons, dtype=float)
 		if not (len(initial_photons.shape)==1 and initial_photons.shape[0] == self.cavity_obj.M):
 			raise Exception("Shape of initial photon population not consistent with {0} photonic modes".format(self.cavity_obj.M))
@@ -78,8 +76,6 @@ class Solver():
 													Expected shape is (J,)
 
 		"""
-		if any([not (type(number)==int or type(number)==np.int64) for number in initial_excited_molecules]):
-			raise Exception("Initial excited molecular population must all be integers")
 		initial_excited_molecules = np.array(initial_excited_molecules, dtype=float)
 		if not (len(initial_excited_molecules.shape)==1 and initial_excited_molecules.shape[0] == self.cavity_obj.J):
 			raise Exception("Shape of initial excited molecular population not consistent with {0} spatial bins".format(self.cavity_obj.J))

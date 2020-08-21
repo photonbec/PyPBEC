@@ -121,8 +121,6 @@ class Cavity():
 
 		"""
 
-		if any([not (type(number)==int or type(number)==np.int64) for number in population]):
-			raise Exception("Molecular population must all be integers")
 		population = np.array(population, dtype=float)
 		if not (len(population.shape)==1 and population.shape[0] == self.J):
 			raise Exception("Shape of molecular reservoir population not consistent with {0} molecular modes".format(self.J))
