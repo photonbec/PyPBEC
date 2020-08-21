@@ -119,7 +119,7 @@ g = cavity_modes.get_coupling_matrix()
 The properties of the optical medium (emission and absorption rates) are set by calling the `set_cavity_emission_rates()` and `set_cavity_absorption_rates` of the `Cavity` class. The user may be interested however in grabbing these quantities from the list of available optical media in the `PyPBEC` package:
 
 ```python
-from PyPBEC.OpticalMedium.OpticalMedium import OpticalMedium
+from PyPBEC.OpticalMedium import OpticalMedium
 R6G = OpticalMedium(optical_medium="Rhodamine6G")
 absorption_rates, emission_rates = R6G.get_rates(lambdas,dye_concentration,n)
 ```
