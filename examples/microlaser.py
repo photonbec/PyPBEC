@@ -7,10 +7,9 @@ population of a single-mode microlaser as a function of pump
 rate, using Rhodamine 6G as the gain medium.
 """
 
-import os,sys,inspect
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0,parentdir) 
+import os
+import sys
+sys.path.insert(0, os.path.abspath('..'))
 import numpy as np
 import matplotlib.pyplot as plt
 

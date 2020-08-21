@@ -11,8 +11,11 @@ import copy
 from scipy.integrate import solve_ivp
 from scipy.optimize import root
 import matplotlib.pyplot as plt
+import os, sys
+sys.path.insert(0, os.path.abspath('..'))
 
-from PyPBEC.Cavity import Cavity
+
+
 
 class Solver():
 
@@ -30,10 +33,12 @@ class Solver():
 
 
 		"""
+
 		self.T = None
 		self.DYNAMICS = False
 		for name, value in kwargs.items():
 			setattr(self, name, value)
+		from PyPBEC.Cavity import Cavity
 		if not isinstance(cavity_obj, Cavity):
 			raise Exception("Solver expects a Cavity() object")
 		self.cavity_obj = copy.deepcopy(cavity_obj)
