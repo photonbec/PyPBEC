@@ -1,0 +1,391 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Cavity module &mdash; PyPBEC 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="OpticalMedium module" href="OpticalMedium.html" />
+    <link rel="prev" title="PyPBEC" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> PyPBEC
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">PyPBEC</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Cavity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OpticalMedium.html">OpticalMedium module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Solver.html">Solver module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyPBEC</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="modules.html">PyPBEC</a> &raquo;</li>
+        
+      <li>Cavity module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/Cavity.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-Cavity">
+<span id="cavity-module"></span><h1>Cavity module<a class="headerlink" href="#module-Cavity" title="Permalink to this headline">¶</a></h1>
+<p>Written by: Joao Rodrigues
+June 2020</p>
+<dl class="class">
+<dt id="Cavity.Cavity">
+<em class="property">class </em><code class="descclassname">Cavity.</code><code class="descname">Cavity</code><span class="sig-paren">(</span><em>M</em>, <em>J</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Cavity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A Cavity() object defines all the physical properties of the cavity, including details of both the photonic and molecular modes</p>
+<dl class="method">
+<dt id="Cavity.Cavity.load_dynamics">
+<code class="descname">load_dynamics</code><span class="sig-paren">(</span><em>t</em>, <em>photons</em>, <em>gmols</em>, <em>emols</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Cavity.load_dynamics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters:</p>
+<blockquote>
+<div>t (numpy array):                Array with time values. Shape is (n, )
+photons (numpy array):  Array with photon populations. Shape is (n, M)
+gmols (numpy array):    Array with ground state molecular populations. Shape is (n, J)
+emols (numpy array):    Array with excited state molecular populations. Shape is (n, J)</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Cavity.set_cavity_absorption_rates">
+<code class="descname">set_cavity_absorption_rates</code><span class="sig-paren">(</span><em>rates</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Cavity.set_cavity_absorption_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters:</p>
+<blockquote>
+<div>rates (numpy array):    Array of cavity absorption rates. Expected shape is (M,)</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Cavity.set_cavity_emission_rates">
+<code class="descname">set_cavity_emission_rates</code><span class="sig-paren">(</span><em>rates</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Cavity.set_cavity_emission_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters:</p>
+<blockquote>
+<div>rates (numpy array):    Array of cavity emission rates. Expected shape is (M,)</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Cavity.set_cavity_loss_rates">
+<code class="descname">set_cavity_loss_rates</code><span class="sig-paren">(</span><em>rates</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Cavity.set_cavity_loss_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters:</p>
+<blockquote>
+<div>rates (numpy array):    Array of cavity loss rates. Expected shape is (M,)</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Cavity.set_coupling_terms">
+<code class="descname">set_coupling_terms</code><span class="sig-paren">(</span><em>coupling_terms</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Cavity.set_coupling_terms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>coupling_terms (numpy array):   Matrix with coefficients determining the coupling between the photonic and</dt>
+<dd>molecular modes. Expected shape is (M, J)</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Cavity.set_reservoir_decay_rates">
+<code class="descname">set_reservoir_decay_rates</code><span class="sig-paren">(</span><em>rates</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Cavity.set_reservoir_decay_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>rates (numpy array):    Array of reversoir decay rates. These are the rates of emission into non-cavity modes.</dt>
+<dd>Expected shape is (J,)</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Cavity.set_reservoir_population">
+<code class="descname">set_reservoir_population</code><span class="sig-paren">(</span><em>population</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Cavity.set_reservoir_population" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>population (numpy array):       Array of reversoir population, i.e. the (total) number of molecules in each bin. </dt>
+<dd>Expected shape is (J,)</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Cavity.set_reservoir_pump_rates">
+<code class="descname">set_reservoir_pump_rates</code><span class="sig-paren">(</span><em>rates</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Cavity.set_reservoir_pump_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters:</p>
+<blockquote>
+<div>rates (numpy array):    Array of reversoir pump rates. Expected shape is (J,)</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Cavity.Modes">
+<em class="property">class </em><code class="descclassname">Cavity.</code><code class="descname">Modes</code><span class="sig-paren">(</span><em>grid_size</em>, <em>grid_delta</em>, <em>L0</em>, <em>q</em>, <em>n</em>, <em>n_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Modes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A Modes() object defines the geometry of the cavity mirrors and calculates the respective mode structure.</p>
+<dl class="method">
+<dt id="Cavity.Modes.compute_cavity_modes">
+<code class="descname">compute_cavity_modes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Modes.compute_cavity_modes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters:</p>
+<dl class="docutils">
+<dt>Return:</dt>
+<dd>lambdas (numpy array):          Wavelength of the cavity eigenmodes, in meters
+modes (numpy array):            Cavity eigenmodes (squared amplitude of the wavefunctions).</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Modes.get_cavity_grid">
+<code class="descname">get_cavity_grid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Modes.get_cavity_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Modes.get_coupling_matrix">
+<code class="descname">get_coupling_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Modes.get_coupling_matrix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Modes.load_pump">
+<code class="descname">load_pump</code><span class="sig-paren">(</span><em>pump</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Modes.load_pump" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters:</p>
+<blockquote>
+<div>pump (numpy array):             2D array with the pump shape. Dimensions must match the cavity grid shape</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Modes.plot_cavity">
+<code class="descname">plot_cavity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Modes.plot_cavity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Modes.set_geometry">
+<code class="descname">set_geometry</code><span class="sig-paren">(</span><em>geometry</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Modes.set_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets a user-defined mirror shape. The mirror shape array size must be compatible with the grid size and grid resolution defined.
+The mirror shape is defined as the spatially dependent perturbation of the cavity length (on top of L0). The units are meters.
+The geometry is set such that the longest cavity point corresponds to geometry=0, such that geometry(x,y) &gt;= 0</p>
+<p>Parameters:</p>
+<blockquote>
+<div>mirror_shape (numpy array):</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Modes.set_geometry_box">
+<code class="descname">set_geometry_box</code><span class="sig-paren">(</span><em>width</em>, <em>height</em>, <em>depth</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Modes.set_geometry_box" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Parameters:</dt>
+<dd>width (float):          Box width, in meters.
+height (float):         Box height, in meters
+depth (float):          Feature depth, in meters.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Modes.set_geometry_circular_box">
+<code class="descname">set_geometry_circular_box</code><span class="sig-paren">(</span><em>radius</em>, <em>depth</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Modes.set_geometry_circular_box" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Parameters:</dt>
+<dd>radius (float):         Spherical box radius, in meters.
+depth (float):          Feature depth, in meters.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Cavity.Modes.set_geometry_spherical">
+<code class="descname">set_geometry_spherical</code><span class="sig-paren">(</span><em>RoC</em>, <em>depth</em><span class="sig-paren">)</span><a class="headerlink" href="#Cavity.Modes.set_geometry_spherical" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Parameters:</dt>
+<dd>RoC (float):            Radius of curvature, in meters.
+depth (float):          Feature depth, in meters.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="OpticalMedium.html" class="btn btn-neutral float-right" title="OpticalMedium module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="modules.html" class="btn btn-neutral float-left" title="PyPBEC" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Imperial College London
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

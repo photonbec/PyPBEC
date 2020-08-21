@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>PyPBEC &mdash; PyPBEC 0.1 documentation</title>
+  <title>OpticalMedium module &mdash; PyPBEC 0.1 documentation</title>
   
 
   
@@ -36,8 +36,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Cavity module" href="Cavity.html" />
-    <link rel="prev" title="Welcome to PyPBEC’s documentation!" href="index.html" /> 
+    <link rel="next" title="Solver module" href="Solver.html" />
+    <link rel="prev" title="Cavity module" href="Cavity.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -84,9 +84,9 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">PyPBEC</a><ul>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">PyPBEC</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="Cavity.html">Cavity module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="OpticalMedium.html">OpticalMedium module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">OpticalMedium module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Solver.html">Solver module</a></li>
 </ul>
 </li>
@@ -136,13 +136,15 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>PyPBEC</li>
+          <li><a href="modules.html">PyPBEC</a> &raquo;</li>
+        
+      <li>OpticalMedium module</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/OpticalMedium.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -155,15 +157,46 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pypbec">
-<h1>PyPBEC<a class="headerlink" href="#pypbec" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="Cavity.html">Cavity module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="OpticalMedium.html">OpticalMedium module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Solver.html">Solver module</a></li>
-</ul>
-</div>
+  <div class="section" id="module-OpticalMedium">
+<span id="opticalmedium-module"></span><h1>OpticalMedium module<a class="headerlink" href="#module-OpticalMedium" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="OpticalMedium.OpticalMedium">
+<em class="property">class </em><code class="descclassname">OpticalMedium.</code><code class="descname">OpticalMedium</code><span class="sig-paren">(</span><em>optical_medium</em><span class="sig-paren">)</span><a class="headerlink" href="#OpticalMedium.OpticalMedium" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="OpticalMedium.OpticalMedium.available_media">
+<code class="descname">available_media</code><em class="property"> = ['Rhodamine6G']</em><a class="headerlink" href="#OpticalMedium.OpticalMedium.available_media" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="OpticalMedium.OpticalMedium.get_rates">
+<code class="descname">get_rates</code><span class="sig-paren">(</span><em>lambdas</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#OpticalMedium.OpticalMedium.get_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the rates of absorption and emission, for a specific optical medium.</p>
+<p>Parameters:</p>
+<blockquote>
+<div>lambdas (list, or other iterable): Wavelength points where the rates are to be calculated. Wavelength is in meters
+other medium specific arguments</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="OpticalMedium.Rhodamine6G">
+<em class="property">class </em><code class="descclassname">OpticalMedium.</code><code class="descname">Rhodamine6G</code><a class="headerlink" href="#OpticalMedium.Rhodamine6G" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#OpticalMedium.OpticalMedium" title="OpticalMedium.OpticalMedium"><code class="xref py py-class docutils literal notranslate"><span class="pre">OpticalMedium.OpticalMedium</span></code></a></p>
+<dl class="method">
+<dt id="OpticalMedium.Rhodamine6G.get_rates">
+<code class="descname">get_rates</code><span class="sig-paren">(</span><em>lambdas</em>, <em>dye_concentration</em>, <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#OpticalMedium.Rhodamine6G.get_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rates for Rhodamine 6G</p>
+<p>Parameters:</p>
+<blockquote>
+<div>lambdas (list, or other iterable):      Wavelength points where the rates are to be calculated. Wavelength is in meters
+dye_concentration (float):                              In mM (milimolar) 1 mM = 1 mol / m^3                    
+n (float):                                                              index of refraction</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -174,10 +207,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="Cavity.html" class="btn btn-neutral float-right" title="Cavity module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="Solver.html" class="btn btn-neutral float-right" title="Solver module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to PyPBEC’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="Cavity.html" class="btn btn-neutral float-left" title="Cavity module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

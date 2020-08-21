@@ -1,0 +1,7 @@
+Solver module
+=============
+
+.. automodule:: Solver
+    :members:
+    :undoc-members:
+    :show-inheritance:

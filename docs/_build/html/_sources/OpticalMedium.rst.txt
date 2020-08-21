@@ -1,0 +1,7 @@
+OpticalMedium module
+====================
+
+.. automodule:: OpticalMedium
+    :members:
+    :undoc-members:
+    :show-inheritance:

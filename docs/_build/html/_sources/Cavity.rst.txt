@@ -1,0 +1,7 @@
+Cavity module
+=============
+
+.. automodule:: Cavity
+    :members:
+    :undoc-members:
+    :show-inheritance:

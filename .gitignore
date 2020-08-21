@@ -3,5 +3,5 @@
 *__pycache__*
 test.py
 *.ipynb_checkpoints*
-/docs/*
-/docs/!.html
+/docs/*.*
+/docs/!*.html
