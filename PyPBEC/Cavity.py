@@ -20,12 +20,19 @@ class Cavity():
 
 	"""
 
-	def __init__(self, M, J):
+	def __init__(self, M, J, cavity_loss_rates=None, cavity_emission_rates=None, cavity_absorption_rates=None, reservoir_decay_rates=None, reservoir_pump_rates=None, reservoir_population=None, coupling_terms=None):
 		"""
 			Parameters:
 
-				M (int):	Number of photonic modes
-				J (int):	Number of molecular modes. This is simply the number of spatial bins
+				M (int):										Number of photonic modes
+				J (int):										Number of molecular modes. This is simply the number of spatial bins
+				cavity_loss_rates (np array, optional): 		Cavity loss rates. Expected shape is (M,)
+				cavity_emission_rates (np array, optional):		Cavity emission rates. Expected shape is (M,)
+				cavity_absorption_rates (np array, optional):	Cavity absorption rates. Expected shape is (M,)
+				reservoir_decay_rates (np array, optional):		Reversoir decay rates. These are the rates of emission into non-cavity modes. Expected shape is (J,)
+				reservoir_pump_rates (np array, optional):		Reversoir pump rates. Expected shape is (J,)
+				reservoir_population (np array, optional):		Reversoir population, i.e. the (total) number of molecules in each bin. Expected shape is (J,)
+				coupling_terms (np array, optional):		 	Coefficients determining the coupling between the photonic and molecular modes. Expected shape is (M, J)
 
 		"""
 		self.M = M
@@ -34,6 +41,21 @@ class Cavity():
 		self.photons = [np.zeros(self.M)]
 		self.gmols = [np.zeros(self.J)]
 		self.emols = [np.zeros(self.J)]
+
+		if not cavity_emission_rates is None:
+			self.set_cavity_loss_rates(rates=cavity_loss_rates)
+		if not cavity_emission_rates is None:
+			self.set_cavity_emission_rates(rates=cavity_emission_rates)
+		if not cavity_absorption_rates is None:
+			self.set_cavity_absorption_rates(rates=cavity_absorption_rates)
+		if not reservoir_decay_rates is None:
+			self.set_reservoir_decay_rates(rates=reservoir_decay_rates)
+		if not reservoir_pump_rates is None:
+			self.set_reservoir_pump_rates(rates=reservoir_pump_rates) 
+		if not reservoir_population is None:
+			self.set_reservoir_population(population=reservoir_population)
+		if not coupling_terms is None:
+			self.set_coupling_terms(coupling_terms=coupling_terms)
 
 
 	def set_cavity_loss_rates(self, rates):

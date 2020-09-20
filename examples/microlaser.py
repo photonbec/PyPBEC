@@ -17,13 +17,19 @@ from PyPBEC.Cavity import Cavity
 from PyPBEC.Solver import SteadyState
 
 # Cavity object
-cavity = Cavity(M=1, J=1)
+cavity = Cavity(M=1, J=1, cavity_loss_rates=[1.0], cavity_emission_rates=[10.0], cavity_absorption_rates=[0.0], reservoir_decay_rates=[500.0], reservoir_population=[1e9], coupling_terms=[[1.0]])
+
+
+# Instead, the different rates can be set by individual calls:
+'''
 cavity.set_cavity_loss_rates(rates=[1.0])
 cavity.set_cavity_emission_rates(rates=[10.0])
 cavity.set_cavity_absorption_rates(rates=[0.0])
 cavity.set_reservoir_decay_rates(rates=[500.0])
 cavity.set_reservoir_population(population=[1e9])
 cavity.set_coupling_terms(coupling_terms=[[1.0]])
+'''
+
 
 # Solver
 pumps = np.geomspace(1.0, 1000, 100)
