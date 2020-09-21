@@ -49,7 +49,7 @@ In recent years, two-dimensional photon gas inside a dye-filled microcavity has
 The light-matter interaction inside the microcavity can be modelled using a nonequilibrium model. Taking into account the intrinsic losses and the absorption and emission processes, the equation of motion for the photon-molecule system is given by the Markovian Lindblad equation:
 
 ```
-dp/dt =  -i[H_0,p] + sum_(l,m) { k L[a_m] + G_up L[s^+_l] +  G_down L[s^m_l] + Am L[a_m s^+_l] + Em L[a^p_m s^-_l]} p,
+dp/dt =  -i[H_0,p] - sum_(l,m) { k L[a_m] + G_up L[s^+_l] +  G_down L[s^m_l] + Am L[a_m s^+_l] + Em L[a^p_m s^-_l]} p,
 
 ```
 
@@ -60,7 +60,7 @@ The above master equation can be used to derive a set of coupled equations of mo
 ```
 dn_m/dt =  - k n_m + \sum_j {E_m g_(m,j) M f_j(n_m+1) - A_m g_(m,j) M (1-f_j) n_m}, and
 
-df_j/dt = -{G_down + \sum_m E_m g_(m,j)(n_m+1)}f_j + {G_up + \sum_m A_m g_(m,j)(n_m)}(1-f_j)}.
+df_j/dt = -{G_down + \sum_m E_m g_(m,j)(n_m+1)}f_j + {G_up + \sum_m A_m g_(m,j) n_m}(1-f_j).
 
 ```
 
