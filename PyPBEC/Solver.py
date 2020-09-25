@@ -121,7 +121,22 @@ class MonteCarlo(Solver):
 
 	def call_solver(self):
 
+		##### Checks if populations are integers:
+		labels = ["excited molecular", "ground-state molecular", "photon"]
+		pops = [self.cavity_obj.emols[-1], self.cavity_obj.gmols[-1], self.cavity_obj.photons[-1]]
+		for label, pop in zip(labels, pops):
+			i = 0
+			for j in range(0, len(pop)):
+				i += 1
+				if not int(pop[j])==pop[j]:
+					if i==1:
+						print("Warning: Monte-Carlo solver found non-integer values in the "+label+" population")
+					pop[j] = int(pop[j])
+
+
+
 		while self.cavity_obj.t[-1] < self.T:
+
 
 			##### total rates array
 			f = self.cavity_obj.emols[-1] / (self.cavity_obj.emols[-1]+self.cavity_obj.gmols[-1])
