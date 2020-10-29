@@ -413,7 +413,7 @@ class Modes():
 		for i in range(first_mode_ax_ind, 8):
 			aux_ind = i-first_mode_ax_ind
 			if self.n_modes > aux_ind:
-				axes[i].pcolor(self.X, self.Y, np.squeeze(self.modes[:,:,aux_ind]))
+				axes[i].pcolor(self.X, self.Y, self.modes[:,:,aux_ind])
 				axes[i].set_xlabel(r'x (microns)')
 				axes[i].set_ylabel(r'y (microns)')
 				axes[i].set_title(r'Mode {0} (Squared amplitude)'.format(aux_ind))
