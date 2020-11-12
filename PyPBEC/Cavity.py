@@ -391,10 +391,24 @@ class Modes():
 		fig, ((ax1, ax2, ax3, ax4), (ax5, ax6, ax7, ax8)) = plt.subplots(2,4, figsize=(14*0.8, 6*0.8))
 		axes = [ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8]
 
-		aux = axes[0].pcolor(self.X, self.Y, self.geometry)
-		axes[0].set_xlabel(r'x (microns)')
-		axes[0].set_ylabel(r'y (microns)')
-		axes[0].set_title("Cavity Geometry")
+		if self.X.shape[0]==1 or self.X.shape[1]==1:
+			if self.X.shape[0]==1:
+				aux = axes[0].plot(self.X[0,:], self.geometry[0,:])
+				axes[0].set_xlabel(r'x (microns)')
+				axes[0].set_ylabel(r'depth (microns)')
+				axes[0].set_title("Cavity Geometry")
+			elif self.X.shape[1]==1:
+				aux = axes[0].plot(self.Y[:,0], self.geometry[:,0])
+				axes[0].set_xlabel(r'y (microns)')
+				axes[0].set_ylabel(r'depth (microns)')
+				axes[0].set_title("Cavity Geometry")
+			else:
+				raise Exception("Inconsistent geometry")			
+		else:
+			aux = axes[0].pcolor(self.X, self.Y, self.geometry)
+			axes[0].set_xlabel(r'x (microns)')
+			axes[0].set_ylabel(r'y (microns)')
+			axes[0].set_title("Cavity Geometry")
 
 		axes[1].plot(1e3*self.lambdas)
 		axes[1].set_xlabel(r'Mode order')
@@ -402,10 +416,22 @@ class Modes():
 		axes[1].set_title("Cavity modes")
 
 		if type(self.pump)==np.ndarray:
-			aux = axes[2].pcolor(self.X, self.Y, self.pump)
-			axes[2].set_xlabel(r'x (microns)')
-			axes[2].set_ylabel(r'y (microns)')
-			axes[2].set_title("Cavity pump")
+			if self.X.shape[0]==1 or self.X.shape[1]==1:
+				if self.X.shape[0]==1:
+					aux = axes[2].plot(self.X[0,:], self.pump[0,:])
+					axes[2].set_xlabel(r'x (microns)')
+					axes[2].set_ylabel(r'Pump')
+					axes[2].set_title("Cavity pump")
+				if self.X.shape[1]==1:
+					aux = axes[2].plot(self.Y[:,0], self.pump[:,0])
+					axes[2].set_xlabel(r'y (microns)')
+					axes[2].set_ylabel(r'Pump')
+					axes[2].set_title("Cavity pump")					
+			else:
+				aux = axes[2].pcolor(self.X, self.Y, self.pump)
+				axes[2].set_xlabel(r'x (microns)')
+				axes[2].set_ylabel(r'y (microns)')
+				axes[2].set_title("Cavity pump")
 			first_mode_ax_ind = 3
 		else:
 			first_mode_ax_ind = 2		
@@ -413,10 +439,22 @@ class Modes():
 		for i in range(first_mode_ax_ind, 8):
 			aux_ind = i-first_mode_ax_ind
 			if self.n_modes > aux_ind:
-				axes[i].pcolor(self.X, self.Y, self.modes[:,:,aux_ind])
-				axes[i].set_xlabel(r'x (microns)')
-				axes[i].set_ylabel(r'y (microns)')
-				axes[i].set_title(r'Mode {0} (Squared amplitude)'.format(aux_ind))
+				if self.X.shape[0]==1 or self.X.shape[1]==1:
+					if self.X.shape[0]==1:
+						axes[i].plot(self.X[0,:], self.modes[0,:,aux_ind])
+						axes[i].set_xlabel(r'x (microns)')
+						axes[i].set_ylabel(r'Mode Intensity')
+						axes[i].set_title(r'Mode {0} (Squared amplitude)'.format(aux_ind))
+					if self.X.shape[1]==1:
+						axes[i].plot(self.X[:,0], self.modes[:,0,aux_ind])
+						axes[i].set_xlabel(r'y (microns)')
+						axes[i].set_ylabel(r'Mode Intensity')
+						axes[i].set_title(r'Mode {0} (Squared amplitude)'.format(aux_ind))
+				else:
+					axes[i].pcolor(self.X, self.Y, self.modes[:,:,aux_ind])
+					axes[i].set_xlabel(r'x (microns)')
+					axes[i].set_ylabel(r'y (microns)')
+					axes[i].set_title(r'Mode {0} (Squared amplitude)'.format(aux_ind))
 
 		plt.tight_layout()
 		plt.show()
