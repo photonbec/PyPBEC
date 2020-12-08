@@ -1,11 +1,3 @@
-"""
-Written by: Joao Rodrigues
-June 2020
-
-
-
-"""
-
 import numpy as np
 import copy
 from scipy.integrate import solve_ivp
@@ -28,7 +20,10 @@ class Solver():
 		"""
 			Parameters:
 		
-				cavity_obj (Cavity object):		The cavity object.
+				cavity_obj (Cavity object):		The cavity object. The cavity object is passed as a reference. This means that the
+												cavity object inside and outside the solver object is actually the same. This makes
+												it easy to change the pump power, for instance, without having to instantiate a 
+												new Solver object
 				T (float):						Total integration time
 
 
@@ -41,10 +36,13 @@ class Solver():
 		from PyPBEC.Cavity import Cavity
 		if not isinstance(cavity_obj, Cavity):
 			raise Exception("Solver expects a Cavity() object")
-		self.cavity_obj = copy.deepcopy(cavity_obj)
+		self.cavity_obj = cavity_obj
 		if (not self.T == None) and self.T <= 0:
 			raise Exception("Total integration time must be positive")
 		self.check_solver_specific_parameters()
+
+		# Resets the cavity populations, in the cavity object
+		self.cavity_obj.reset_cavity_populations()	
 
 
 
@@ -123,6 +121,7 @@ class MonteCarlo(Solver):
 
 		##### Checks if populations are integers:
 		labels = ["excited molecular", "ground-state molecular", "photon"]
+
 		pops = [self.cavity_obj.emols[-1], self.cavity_obj.gmols[-1], self.cavity_obj.photons[-1]]
 		for label, pop in zip(labels, pops):
 			i = 0
@@ -136,7 +135,6 @@ class MonteCarlo(Solver):
 
 
 		while self.cavity_obj.t[-1] < self.T:
-
 
 			##### total rates array
 			f = self.cavity_obj.emols[-1] / (self.cavity_obj.emols[-1]+self.cavity_obj.gmols[-1])
@@ -237,24 +235,6 @@ class ODE(Solver):
 
 
 	def call_solver(self):
-		# Defines the system of equations
-		def dydt(t, y):
-			photons = y[0:self.cavity_obj.M]
-			excited_molecules = y[self.cavity_obj.M:]
-			derivatives = list()
-			# photonic part
-			f = excited_molecules/self.cavity_obj.mols
-			[derivatives.append(
-				-self.cavity_obj.rates_kappa[i]*y[i]
-				+self.cavity_obj.rates_E[i]*(y[i]+1)*np.sum(self.cavity_obj.g[i,:]*f)
-				-self.cavity_obj.rates_A[i]*y[i]*np.sum(self.cavity_obj.g[i,:]*(1-f)))
-				for i in range(0, self.cavity_obj.M)]
-			# molecules part
-			[derivatives.append(
-				-(self.cavity_obj.rates_Gamma_down[i]+np.sum(self.cavity_obj.g[:,i]*self.cavity_obj.rates_E*(photons+1)))*y[i+self.cavity_obj.M]
-				+(self.cavity_obj.rates_Gamma_up[i]+np.sum(self.cavity_obj.g[:,i]*self.cavity_obj.rates_A*photons))*(self.cavity_obj.mols[i]-y[i+self.cavity_obj.M]))
-				for i in range(0, self.cavity_obj.J)]
-			return np.array(derivatives, dtype=float)
 
 		# Defines the initial conditions
 		y0 = list()
@@ -263,7 +243,7 @@ class ODE(Solver):
 
 		# Solves the initial value problem
 		t_eval = np.linspace(0, self.T, self.n_points)
-		sol = solve_ivp(dydt, t_span=(0, self.T), y0=y0, t_eval=t_eval, vectorized=False)
+		sol = solve_ivp(self.dydt, t_span=(0, self.T), y0=y0, t_eval=t_eval, vectorized=False)
 
 		# Saves the solution
 		aux_gmols = np.array([self.cavity_obj.mols-sol.y[self.cavity_obj.M:,i] for i in range(0, self.n_points)])
@@ -274,6 +254,26 @@ class ODE(Solver):
 			gmols=aux_gmols)
 
 
+	def dydt(self, t, y): # rate equations
+
+		# Cavity parameters
+		Abs = self.cavity_obj.rates_A
+		Emi = self.cavity_obj.rates_E
+		Mol = self.cavity_obj.mols
+		ka = self.cavity_obj.rates_kappa
+		gDown = self.cavity_obj.rates_Gamma_down
+		g = self.cavity_obj.g
+		pump = self.cavity_obj.rates_Gamma_up		
+
+		photons = y[0:self.cavity_obj.M]
+		excited_molecules = y[self.cavity_obj.M:]
+		f = excited_molecules/self.cavity_obj.mols
+
+		dn_dt = -ka*photons + Emi*(photons+1)*(g@f) - Abs*photons*(g@(-f+1))
+		df_dt = -(gDown+(g.T@(Emi*(photons+1))))*excited_molecules + (pump+(g.T@(Abs*photons)))*(Mol-excited_molecules)
+		y_dot = np.array(list(dn_dt)+list(df_dt))
+
+		return y_dot
 
 
 class SteadyState(Solver):
@@ -341,4 +341,191 @@ class SteadyState(Solver):
 
 
 
+
+
+
+
+
+
+class RotatedBasisODE(Solver):
+
+	"""
+		Solves the cavity dynamics by performing an hierarchical dimensionality reduction on the molecular reservoir basis.
+		This reduces the overall number of equations at different levels of accuracy in relation to the original set of
+		differential equations. The smaller number of equations allows a faster computation.
+		More details check: 
+		Walker et al, Physical Review A 100, 053828 (2019), link: https://journals.aps.org/pra/abstract/10.1103/PhysRevA.100.053828
+
+		Parameters:
+			order (int):		Order of the rotated basis approximation
+			VERBOSE (bool):		If True, plots information about rotated basis. (default=True)
+
+	"""
 		
+
+	def check_solver_specific_parameters(self):
+
+		if not hasattr(self, "order"):
+			raise Exception("Please set the order of the rotated basis hierarchical approximation")
+		if not hasattr(self, "VERBOSE"):
+			self.VERBOSE = True	
+
+
+	def call_solver(self):
+
+		if not hasattr(self, "mode_num"):
+			self.mode_num, self.basis_num, self.RinvWinv, self.RW, self.RinvWinvGdA, self.RLRT = self.setup_rotated_basis()
+
+		# Defines the initial conditions
+		y0 = np.zeros(self.mode_num+self.basis_num)
+		print("***")
+		print("Warning: Initial conditions are set to zero in the rotated basis solver.")
+		print("A future release will implement the ability to defined non-zero initial conditions")
+		print("***")
+
+		# Solves the initial value problem
+		t_eval = np.linspace(0, self.T, self.n_points)
+		sol = solve_ivp(self.dydt, t_span=(0, self.T), y0=y0, t_eval=t_eval, vectorized=False)
+
+		# Saves the solution
+		self.cavity_obj.load_dynamics(
+			t=sol.t, 
+			photons=np.transpose(sol.y[0:self.cavity_obj.M,:]),
+			emols=[None]*self.cavity_obj.J,
+			gmols=[None]*self.cavity_obj.J)
+
+
+
+	def setup_rotated_basis(self):
+
+		g = self.cavity_obj.g
+		order = self.order
+		Abs = self.cavity_obj.rates_A
+		Emi = self.cavity_obj.rates_E
+		M = self.cavity_obj.M
+		J = self.cavity_obj.J
+
+		# singular value decomposition
+		U, D, Vd = np.linalg.svd(g)
+		DMat = np.zeros(np.shape(g), dtype=float)
+		sz = np.min(np.shape(DMat))
+		DMat[:sz, :sz] = np.diag(D)
+		
+
+		Dinv = np.zeros(np.shape(g)[::-1], dtype=float)
+		sz = np.min(np.shape(Dinv))
+		Dinv[:sz, :sz] = np.diag(1./D)
+
+		Bp = np.linalg.inv(U.dot(DMat)[:,:M])
+		B = np.identity(J)
+		B[:M,:M] = copy.deepcopy(Bp)
+		
+		def HConj(mat):
+			return np.conj(mat).T
+		
+		W = HConj(Vd).dot(B)
+		Winv = np.linalg.inv(W)
+		
+		LMats = []
+		for i in range(M):
+			L = Winv.dot(np.diag(g[i])@W)
+			LMats.append(L)
+		
+		fZero = np.zeros([M,J])
+		fZero[:M,:M] = np.diag([1]*M)
+		
+		def calcRinvLoop():
+			prevO = list(fZero)
+			allVs = copy.deepcopy(prevO)
+			
+			independenceValLg = 1e-5     
+			independenceValSm = 1e-15
+
+			orderSzA = [len(prevO)]
+			orderBndA = [len(prevO)]
+			for orderI in range(1, order):
+				tmp = np.array(LMats).dot(np.transpose(prevO))
+				vs = np.reshape(np.transpose(tmp, (0,2,1)), (M*len(prevO),J))
+
+				nextO = []
+				for v in vs:
+					i = 0
+					while(True):
+						mOver = 0
+						v /= np.sqrt(v.dot(v))
+						for u in allVs:
+							ov = u.dot(v)
+							if ov>mOver:
+								mOver = ov
+							v -= u*(ov)
+						rsz = v.dot(v)
+						if rsz < independenceValLg:
+							break
+						if rsz>1+1e-5:
+							raise Exception("q")
+						i += 1
+						if mOver<independenceValSm:
+							v /= np.sqrt(v.dot(v))
+							allVs.append(v)
+							nextO.append(v)
+							break
+				prevO = nextO
+
+				if len(nextO) == 0:
+					break
+
+				orderSzA.append(len(nextO))
+				orderBndA.append(len(allVs))
+
+			return [np.array(allVs),orderSzA,orderBndA]
+		
+		Rinv, orderSzA, orderBndA = calcRinvLoop()
+		R = HConj(Rinv)
+		RinvWinv = Rinv.dot(Winv)
+		RW = W.dot(R)
+		RinvWinv1 = Rinv.dot(np.sum(Winv,1))
+		RinvWinvGdA = Rinv.dot(Winv).dot(HConj(g))*Abs   # RinvWinvGdE = Rinv.dot(Winv).dot(HConj(g))*Emi
+		RLR = []
+		for L in np.array(LMats):
+		    RLR.append(Rinv.dot(L).dot(np.transpose(Rinv)) )
+		RLRT = np.transpose(RLR,[1,2,0])
+		basis_num = len(Rinv)
+		mode_num = M
+
+		if self.VERBOSE:
+			print("-> Rotated basis ode solver:")
+			print("    -> Total number of photonic modes                  = ", str(mode_num))
+			print("    -> Total number of (real space) molecular modes    = ", str(J))
+			print("    -> Total number of (rotated space) molecular modes = ", str(basis_num))
+
+		return mode_num, basis_num, RinvWinv, RW, RinvWinvGdA, RLRT
+
+
+	def dydt(self, t, y): # rate equations
+		
+		# Cavity parameters
+		Abs = self.cavity_obj.rates_A
+		Emi = self.cavity_obj.rates_E
+		Mol = self.cavity_obj.mols
+		ka = self.cavity_obj.rates_kappa
+		gDown = self.cavity_obj.rates_Gamma_down
+		g = self.cavity_obj.g
+		pump = self.cavity_obj.rates_Gamma_up
+
+		mode_num, RinvWinv, RW, RinvWinvGdA, RLRT = self.mode_num, self.RinvWinv, self.RW, self.RinvWinvGdA, self.RLRT
+
+		n = y[:mode_num]
+		fh = y[mode_num:]
+
+		#dn_dt = -ka*n + n*(Emi+Abs)*fh[:mode_num] + Emi*fh[:mode_num] - n*Abs*np.sum(g*Mol, 1)
+		#dm_dt = RinvWinv.dot(pump*Mol) - (RinvWinv*(pump+gDown)).dot(RW).dot(fh) + RinvWinv.dot(Mol)*RinvWinvGdA.dot(n) - RLRT.dot(((Abs + Emi)*n + Emi)).dot(fh)
+
+		dn_dt = -ka*n + n*(Emi+Abs)*fh[:mode_num] + Emi*fh[:mode_num] - n*Abs*np.sum(g, 1)
+		dm_dt = RinvWinv.dot(pump) - (RinvWinv*(pump+gDown)).dot(RW).dot(fh) + RinvWinvGdA.dot(n) - RLRT.dot(((Abs+Emi)*n + Emi)).dot(fh)
+
+		y_dot = np.array(list(dn_dt)+list(dm_dt))
+
+		return y_dot
+
+
+

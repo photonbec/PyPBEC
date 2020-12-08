@@ -37,10 +37,8 @@ class Cavity():
 		"""
 		self.M = M
 		self.J = J
-		self.t = [0.0]
-		self.photons = [np.zeros(self.M)]
-		self.gmols = [np.zeros(self.J)]
-		self.emols = [np.zeros(self.J)]
+		self.reset_cavity_populations()
+
 
 		if not cavity_emission_rates is None:
 			self.set_cavity_loss_rates(rates=cavity_loss_rates)
@@ -56,6 +54,13 @@ class Cavity():
 			self.set_reservoir_population(population=reservoir_population)
 		if not coupling_terms is None:
 			self.set_coupling_terms(coupling_terms=coupling_terms)
+
+
+	def reset_cavity_populations(self):
+		self.photons = [np.zeros(self.M)]
+		self.gmols = [np.zeros(self.J)]
+		self.emols = [np.zeros(self.J)]	
+		self.t = [0.0]
 
 
 	def set_cavity_loss_rates(self, rates):
@@ -183,14 +188,15 @@ class Cavity():
 
 		"""
 
-		if not len(set([t.shape[0], photons.shape[0], gmols.shape[0], emols.shape[0]])) == 1:
-			raise Exception("Cavity populations do not have consistent shapes")
-		if not photons.shape[1] == self.M:
-			raise Exception("Photon population not consistent with {0} photonic modes".format(self.M))
-		if not gmols.shape[1] == self.J:
-			raise Exception("Ground state molecular population not consistent with {0} molecular modes".format(self.J))
-		if not emols.shape[1] == self.J:
-			raise Exception("Excited state molecular population not consistent with {0} molecular modes".format(self.J))
+		if not photons[0] is None:
+			if not photons.shape[1] == self.M:
+				raise Exception("Photon population not consistent with {0} photonic modes".format(self.M))
+		if not gmols[0] is None:		
+			if not gmols.shape[1] == self.J:
+				raise Exception("Ground state molecular population not consistent with {0} molecular modes".format(self.J))
+		if not emols[0] is None:
+			if not emols.shape[1] == self.J:
+				raise Exception("Excited state molecular population not consistent with {0} molecular modes".format(self.J))
 
 		self.t = copy.deepcopy(t)
 		self.photons = copy.deepcopy(photons)
