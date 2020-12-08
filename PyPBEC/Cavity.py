@@ -411,7 +411,7 @@ class Modes():
 			else:
 				raise Exception("Inconsistent geometry")			
 		else:
-			aux = axes[0].pcolor(self.X, self.Y, self.geometry)
+			aux = axes[0].pcolor(self.X, self.Y, self.geometry, shading='auto')
 			axes[0].set_xlabel(r'x (microns)')
 			axes[0].set_ylabel(r'y (microns)')
 			axes[0].set_title("Cavity Geometry")
@@ -434,7 +434,7 @@ class Modes():
 					axes[2].set_ylabel(r'Pump')
 					axes[2].set_title("Cavity pump")					
 			else:
-				aux = axes[2].pcolor(self.X, self.Y, self.pump)
+				aux = axes[2].pcolor(self.X, self.Y, self.pump, shading='auto')
 				axes[2].set_xlabel(r'x (microns)')
 				axes[2].set_ylabel(r'y (microns)')
 				axes[2].set_title("Cavity pump")
@@ -457,7 +457,7 @@ class Modes():
 						axes[i].set_ylabel(r'Mode Intensity')
 						axes[i].set_title(r'Mode {0} (Squared amplitude)'.format(aux_ind))
 				else:
-					axes[i].pcolor(self.X, self.Y, self.modes[:,:,aux_ind])
+					axes[i].pcolor(self.X, self.Y, self.modes[:,:,aux_ind], shading='auto')
 					axes[i].set_xlabel(r'x (microns)')
 					axes[i].set_ylabel(r'y (microns)')
 					axes[i].set_title(r'Mode {0} (Squared amplitude)'.format(aux_ind))
