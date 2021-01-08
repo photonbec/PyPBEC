@@ -30,7 +30,6 @@ class Solver():
 		"""
 
 		self.T = None
-		self.DYNAMICS = False
 		for name, value in kwargs.items():
 			setattr(self, name, value)
 		from PyPBEC.Cavity import Cavity
@@ -63,7 +62,6 @@ class Solver():
 		if not (len(initial_photons.shape)==1 and initial_photons.shape[0] == self.cavity_obj.M):
 			raise Exception("Shape of initial photon population not consistent with {0} photonic modes".format(self.cavity_obj.M))
 		self.initial_photons = initial_photons
-		self.DYNAMICS = True
 
 
 	def set_initial_excited_molecules(self, initial_excited_molecules):
@@ -80,14 +78,20 @@ class Solver():
 		if any([initial_excited_molecules[i]>self.cavity_obj.mols[i] for i in range(0, self.cavity_obj.J)]):
 			raise Exception("Some bins are initialized with a fraction of excited molecules above one")
 		self.initial_excited_molecules = initial_excited_molecules
-		self.DYNAMICS = True
 
 
 	def solve(self):
-		if self.DYNAMICS == True:
-			self.cavity_obj.photons[0] = 1.0*self.initial_photons
-			self.cavity_obj.emols[0] = 1.0*self.initial_excited_molecules
-			self.cavity_obj.gmols[0] = self.cavity_obj.mols - self.initial_excited_molecules
+		"""
+			Solves the cavity.
+
+			Return:
+				cavity_obj (Cavity() object): Returns a deep copy of the the Cavity object with the updated photonic and molecular populations.
+
+		"""
+		self.cavity_obj.reset_cavity_populations()
+		self.cavity_obj.photons[0] = 1.0*self.initial_photons
+		self.cavity_obj.emols[0] = 1.0*self.initial_excited_molecules
+		self.cavity_obj.gmols[0] = self.cavity_obj.mols - self.initial_excited_molecules
 		self.call_solver()
 		return copy.deepcopy(self.cavity_obj)
 
@@ -271,7 +275,7 @@ class ODE(Solver):
 
 		dn_dt = -ka*photons + Emi*(photons+1)*(g@f) - Abs*photons*(g@(-f+1))
 		df_dt = -(gDown+(g.T@(Emi*(photons+1))))*excited_molecules + (pump+(g.T@(Abs*photons)))*(Mol-excited_molecules)
-		y_dot = np.array(list(dn_dt)+list(df_dt))
+		y_dot = np.concatenate((dn_dt, df_dt))
 
 		return y_dot
 
@@ -368,13 +372,21 @@ class RotatedBasisODE(Solver):
 		if not hasattr(self, "order"):
 			raise Exception("Please set the order of the rotated basis hierarchical approximation")
 		if not hasattr(self, "VERBOSE"):
-			self.VERBOSE = True	
+			self.VERBOSE = True
+		self.g = copy.deepcopy(self.cavity_obj.g)
 
 
 	def call_solver(self):
 
+		if not np.allclose(self.g, self.cavity_obj.g, rtol=1e-9):
+			raise Exception("Rotated basis projectors were calculatad for a different g matrix. You probably changed the g matrix in the Cavity() object. Instantiate a new Solver() object to calculate the projectors for the new Cavity() object.")
+
 		if not hasattr(self, "mode_num"):
 			self.mode_num, self.basis_num, self.RinvWinv, self.RW, self.RinvWinvGdA, self.RLRT = self.setup_rotated_basis()
+
+		# Precalculates some terms
+		self.pump_term = self.RinvWinv.dot(self.cavity_obj.rates_Gamma_up)
+		self.fh_term = (self.RinvWinv*(self.cavity_obj.rates_Gamma_up+self.cavity_obj.rates_Gamma_down)).dot(self.RW)
 
 		# Defines the initial conditions
 		y0 = np.zeros(self.mode_num+self.basis_num)
@@ -397,6 +409,9 @@ class RotatedBasisODE(Solver):
 
 
 	def setup_rotated_basis(self):
+
+		if self.VERBOSE:
+			print("-> Calculating rotated basis projectors:")
 
 		g = self.cavity_obj.g
 		order = self.order
@@ -493,7 +508,6 @@ class RotatedBasisODE(Solver):
 		mode_num = M
 
 		if self.VERBOSE:
-			print("-> Rotated basis ode solver:")
 			print("    -> Total number of photonic modes                  = ", str(mode_num))
 			print("    -> Total number of (real space) molecular modes    = ", str(J))
 			print("    -> Total number of (rotated space) molecular modes = ", str(basis_num))
@@ -512,7 +526,7 @@ class RotatedBasisODE(Solver):
 		g = self.cavity_obj.g
 		pump = self.cavity_obj.rates_Gamma_up
 
-		mode_num, RinvWinv, RW, RinvWinvGdA, RLRT = self.mode_num, self.RinvWinv, self.RW, self.RinvWinvGdA, self.RLRT
+		mode_num, RinvWinv, RW, RinvWinvGdA, RLRT, pump_term, fh_term = self.mode_num, self.RinvWinv, self.RW, self.RinvWinvGdA, self.RLRT, self.pump_term, self.fh_term
 
 		n = y[:mode_num]
 		fh = y[mode_num:]
@@ -521,9 +535,9 @@ class RotatedBasisODE(Solver):
 		#dm_dt = RinvWinv.dot(pump*Mol) - (RinvWinv*(pump+gDown)).dot(RW).dot(fh) + RinvWinv.dot(Mol)*RinvWinvGdA.dot(n) - RLRT.dot(((Abs + Emi)*n + Emi)).dot(fh)
 
 		dn_dt = -ka*n + n*(Emi+Abs)*fh[:mode_num] + Emi*fh[:mode_num] - n*Abs*np.sum(g, 1)
-		dm_dt = RinvWinv.dot(pump) - (RinvWinv*(pump+gDown)).dot(RW).dot(fh) + RinvWinvGdA.dot(n) - RLRT.dot(((Abs+Emi)*n + Emi)).dot(fh)
+		dm_dt = pump_term - fh_term.dot(fh) + RinvWinvGdA.dot(n) - RLRT.dot(((Abs+Emi)*n + Emi)).dot(fh)
 
-		y_dot = np.array(list(dn_dt)+list(dm_dt))
+		y_dot = np.concatenate((dn_dt, dm_dt))
 
 		return y_dot
 
