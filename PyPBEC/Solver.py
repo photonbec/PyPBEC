@@ -403,8 +403,8 @@ class RotatedBasisODE(Solver):
 		self.cavity_obj.load_dynamics(
 			t=sol.t, 
 			photons=np.transpose(sol.y[0:self.cavity_obj.M,:]),
-			emols=[None]*self.cavity_obj.J,
-			gmols=[None]*self.cavity_obj.J)
+			emols=np.array([None]*self.cavity_obj.J),
+			gmols=np.array([None]*self.cavity_obj.J))
 
 
 
