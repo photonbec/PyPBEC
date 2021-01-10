@@ -374,6 +374,18 @@ class RotatedBasisODE(Solver):
 		if not hasattr(self, "VERBOSE"):
 			self.VERBOSE = True
 		self.g = copy.deepcopy(self.cavity_obj.g)
+		self.initial_fh = None
+
+
+	def set_initial_excitation_fraction_in_rotated_space(self, initial_fh):
+		"""
+			Sets the initial excited molecular fraction, in the rotated basis space. Notice that, in the rotated basis space, the set_initial_excited_molecules() plays no role.
+
+			Parameters:
+				initial_fh (numpy array)
+
+		"""
+		self.initial_fh = fh
 
 
 	def call_solver(self):
@@ -389,11 +401,15 @@ class RotatedBasisODE(Solver):
 		self.fh_term = (self.RinvWinv*(self.cavity_obj.rates_Gamma_up+self.cavity_obj.rates_Gamma_down)).dot(self.RW)
 
 		# Defines the initial conditions
-		y0 = np.zeros(self.mode_num+self.basis_num)
-		print("***")
-		print("Warning: Initial conditions are set to zero in the rotated basis solver.")
-		print("A future release will implement the ability to defined non-zero initial conditions")
-		print("***")
+		if self.initial_fh is None:
+			y0 = np.concatenate((np.array(self.initial_photons), np.zeros(self.basis_num)))
+			print("Warning: Initial molecular excitation fraction is set to zero in the rotated basis solver.")
+		else:
+			if not len(self.initial_fh) == self.basis_num:
+				raise Exception("The initial excitation fraction in the rotated basis space should have length {0}".format(self.basis_num))
+			else:
+				y0 = np.concatenate((np.array(self.initial_photons), np.array(self.initial_fh)))
+
 
 		# Solves the initial value problem
 		t_eval = np.linspace(0, self.T, self.n_points)
