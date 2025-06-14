@@ -106,7 +106,7 @@ from PyPBEC.Cavity import Modes
 cavity_modes = Modes(grid_size,grid_delta,L0,q,n,n_modes)
 ```
 
-Notably, the ```Modes``` class allows for the design of an arbitrary cavity geometry (arbitrary trapping potential) by using the `set_geometry()` method. Some typical geometries, such as the spherical and box potential are already pre-implemented. Here, we consider a spherical geometry (one planar and one spherical mirror) with radius, `feature_RoC` and depth `feature_depth`. The `compute_cavity_modes()` method returns the wavelength and the spacial structure (squared wavefunction) of the cavity eigenmodes:
+Notably, the ```Modes``` class allows for the design of an arbitrary cavity geometry (arbitrary trapping potential) by using the `set_geometry()` method. Some typical geometries, such as the spherical and box potential are already pre-implemented. Here, we consider a spherical geometry (one planar and one spherical mirror) with radius, `feature_RoC` and depth `feature_depth`. The `compute_cavity_modes()` method will return the wavelength and the spacial structure (squared wavefunction) of the cavity eigenmodes:
 
 ```python
 cavity_modes.set_geometry_spherical(feature_RoC,feature_depth)
